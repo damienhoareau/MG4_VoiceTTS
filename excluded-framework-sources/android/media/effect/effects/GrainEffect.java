@@ -1,0 +1,13 @@
+package android.media.effect.effects;
+
+import android.app.slice.SliceItem;
+import android.filterpacks.imageproc.GrainFilter;
+import android.media.effect.EffectContext;
+import android.media.effect.SingleFilterEffect;
+
+/* JADX INFO: loaded from: classes.dex */
+public class GrainEffect extends SingleFilterEffect {
+    public GrainEffect(EffectContext effectContext, String str) {
+        super(effectContext, str, GrainFilter.class, SliceItem.FORMAT_IMAGE, SliceItem.FORMAT_IMAGE, new Object[0]);
+    }
+}

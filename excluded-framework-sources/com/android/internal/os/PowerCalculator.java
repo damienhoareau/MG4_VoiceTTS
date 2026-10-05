@@ -1,0 +1,14 @@
+package com.android.internal.os;
+
+import android.os.BatteryStats;
+
+/* JADX INFO: loaded from: classes3.dex */
+public abstract class PowerCalculator {
+    public abstract void calculateApp(BatterySipper batterySipper, BatteryStats.Uid uid, long j, long j2, int i);
+
+    public void calculateRemaining(BatterySipper batterySipper, BatteryStats batteryStats, long j, long j2, int i) {
+    }
+
+    public void reset() {
+    }
+}

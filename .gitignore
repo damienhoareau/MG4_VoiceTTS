@@ -1,0 +1,11 @@
+build/
+.gradle/
+.idea/
+local.properties
+*.iml
+.kotlin/
+
+# Voix Piper par defaut embarquees (~63 Mo chacune) : trop volumineux pour un
+# depot git normal. Recuperables via les commandes curl documentees dans
+# docs/TTS_ENGINE.md (table des 4 voix par defaut + repos HuggingFace).
+app/src/main/assets/sherpa/voices/*/model.onnx

@@ -1,0 +1,15 @@
+package org.chromium.arc;
+
+import android.util.EventLog;
+
+/* JADX INFO: loaded from: classes3.dex */
+public class EventLogTags {
+    public static final int ARC_SYSTEM_EVENT = 300000;
+
+    private EventLogTags() {
+    }
+
+    public static void writeArcSystemEvent(String str) {
+        EventLog.writeEvent(ARC_SYSTEM_EVENT, str);
+    }
+}

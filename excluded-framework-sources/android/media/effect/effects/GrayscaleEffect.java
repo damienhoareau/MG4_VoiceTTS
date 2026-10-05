@@ -1,0 +1,13 @@
+package android.media.effect.effects;
+
+import android.app.slice.SliceItem;
+import android.filterpacks.imageproc.ToGrayFilter;
+import android.media.effect.EffectContext;
+import android.media.effect.SingleFilterEffect;
+
+/* JADX INFO: loaded from: classes.dex */
+public class GrayscaleEffect extends SingleFilterEffect {
+    public GrayscaleEffect(EffectContext effectContext, String str) {
+        super(effectContext, str, ToGrayFilter.class, SliceItem.FORMAT_IMAGE, SliceItem.FORMAT_IMAGE, new Object[0]);
+    }
+}

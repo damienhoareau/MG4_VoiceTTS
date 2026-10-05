@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TTS Tester</string>
+
+    <string name="hint_text">Texte à synthétiser…</string>
+    <string name="label_language">Langue (moteur direct) :</string>
+    <string name="btn_speak_direct">Écouter — moteur direct (sherpa-onnx)</string>
+    <string name="btn_speak_system">Écouter — service système</string>
+    <string name="btn_stop">Stop</string>
+    <string name="status_idle">Prêt.</string>
+    <string name="note_system">
+        Ce bouton passe par le service AIDL de com.saicmotor.voicetts (comme en voiture) :
+        il parle dans la langue actuellement réglée dans le menu "Voix" du véhicule, via
+        le pipeline complet (focus audio, file d\'attente, etc.). Le sélecteur de langue
+        ci-dessus ne s\'applique qu\'au bouton "moteur direct".
+    </string>
+</resources>

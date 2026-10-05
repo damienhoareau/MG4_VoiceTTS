@@ -1,0 +1,47 @@
+package android.view.animation;
+
+import android.content.Context;
+import android.util.AttributeSet;
+import com.android.internal.view.animation.HasNativeInterpolator;
+import com.android.internal.view.animation.NativeInterpolatorFactory;
+import com.android.internal.view.animation.NativeInterpolatorFactoryHelper;
+
+/* JADX INFO: loaded from: classes2.dex */
+@HasNativeInterpolator
+public class BounceInterpolator extends BaseInterpolator implements NativeInterpolatorFactory {
+    private static float bounce(float f) {
+        return f * f * 8.0f;
+    }
+
+    public BounceInterpolator() {
+    }
+
+    public BounceInterpolator(Context context, AttributeSet attributeSet) {
+    }
+
+    @Override // android.animation.TimeInterpolator
+    public float getInterpolation(float f) {
+        float fBounce;
+        float f2;
+        float f3 = f * 1.1226f;
+        if (f3 < 0.3535f) {
+            return bounce(f3);
+        }
+        if (f3 < 0.7408f) {
+            fBounce = bounce(f3 - 0.54719f);
+            f2 = 0.7f;
+        } else if (f3 < 0.9644f) {
+            fBounce = bounce(f3 - 0.8526f);
+            f2 = 0.9f;
+        } else {
+            fBounce = bounce(f3 - 1.0435f);
+            f2 = 0.95f;
+        }
+        return fBounce + f2;
+    }
+
+    @Override // com.android.internal.view.animation.NativeInterpolatorFactory
+    public long createNativeInterpolator() {
+        return NativeInterpolatorFactoryHelper.createBounceInterpolator();
+    }
+}

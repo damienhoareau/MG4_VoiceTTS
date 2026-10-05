@@ -1,0 +1,13 @@
+package android.media.effect.effects;
+
+import android.app.slice.SliceItem;
+import android.filterpacks.imageproc.BlackWhiteFilter;
+import android.media.effect.EffectContext;
+import android.media.effect.SingleFilterEffect;
+
+/* JADX INFO: loaded from: classes.dex */
+public class BlackWhiteEffect extends SingleFilterEffect {
+    public BlackWhiteEffect(EffectContext effectContext, String str) {
+        super(effectContext, str, BlackWhiteFilter.class, SliceItem.FORMAT_IMAGE, SliceItem.FORMAT_IMAGE, new Object[0]);
+    }
+}
