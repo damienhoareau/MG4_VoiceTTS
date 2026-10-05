@@ -5,6 +5,44 @@ Projet Android Studio reconstruit depuis la décompilation (jadx) de
 synthèse vocale de la MG4. But : pouvoir remplacer le moteur iFlytek propriétaire
 par un moteur offline, tout en gardant le reste du comportement identique.
 
+## Avertissements et licences
+
+**Projet personnel de reverse engineering / interopérabilité**, non affilié à
+SAIC Motor, MG, ni à aucun éditeur des SDK d'origine (iFlytek, Nuance/DragonDrive).
+Fourni "tel quel", sans garantie d'aucune sorte ; usage à vos propres risques, sur
+votre propre véhicule.
+
+- **`com/saicmotor/**`** (code applicatif d'origine, décompilé via jadx depuis
+  l'APK constructeur) reste la propriété de ses auteurs d'origine. Il est conservé
+  ici uniquement dans un but d'interopérabilité personnelle (faire fonctionner un
+  moteur TTS alternatif sur mon propre véhicule) — aucune licence de redistribution
+  n'est accordée par l'ayant droit. Ne pas republier l'APK résultant, ni ce code,
+  en dehors d'un usage personnel.
+- **`excluded-framework-sources/`** : classes internes de la plateforme Android/AOSP
+  (et éventuellement d'ajouts spécifiques constructeur) extraites par erreur par
+  jadx — gardées uniquement pour référence, **jamais compilées** dans l'APK final
+  (voir ci-dessous).
+- **Clé de signature** (`keystore/aosp-platform.jks`) : clé "platform" AOSP publique
+  et bien connue (mot de passe `android`), pas un secret — voir `SIGNING.md`.
+- **Dépendances tierces** (ajoutées par ce projet, licences permissives) :
+  - [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) — Apache-2.0 (k2-fsa)
+  - [ONNX Runtime](https://github.com/microsoft/onnxruntime) (embarqué dans l'AAR
+    sherpa-onnx) — MIT (Microsoft)
+  - [Piper](https://github.com/rhasspy/piper) — MIT (voix VITS consommées par
+    sherpa-onnx)
+  - [espeak-ng](https://github.com/espeak-ng/espeak-ng) — **GPL-3.0-or-later** ;
+    seules les données de phonémisation (`espeak-ng-data/`, dictionnaires) sont
+    embarquées en assets, pas de code espeak-ng lié directement par ce projet
+    (uniquement via sherpa-onnx, qui l'intègre lui-même)
+  - OkHttp — Apache-2.0 (Square)
+  - fastjson (`com.alibaba`) — Apache-2.0
+- **Voix Piper par défaut** (téléchargées depuis le mirroir HuggingFace
+  `csukuangfj/vits-piper-*`, voir `docs/TTS_ENGINE.md`) : chaque voix a sa propre
+  licence selon le jeu de données vocal d'origine (généralement MIT/CC0/CC-BY selon
+  la voix) — vérifier la licence de la voix précise avant toute redistribution ;
+  ces modèles ne sont volontairement **pas commités** dans ce dépôt (voir
+  `.gitignore`), uniquement téléchargés à la compilation/au premier lancement.
+
 ## Ce qui a changé par rapport au décompile brut
 
 L'export jadx produisait ~5765 fichiers, dont la plupart n'étaient pas du vrai code
