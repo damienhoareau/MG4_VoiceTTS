@@ -269,11 +269,6 @@ public class TtsService extends Service {
                 return;
             }
             this.isSpeaking = true;
-            try {
-                Thread.sleep(500L);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             if (promptData.isShouldAudioFocus() && !this.hasRequestAudioFocus) {
                 Log.d(this.TAG, "doSpeakInThread before, requestAudioFocusRequest");
                 if (!requestFocusSuccessFul(promptData.getSourceId())) {
@@ -342,7 +337,7 @@ public class TtsService extends Service {
                 if (promptDataPeek != null) {
                     Log.v(this.TAG, "peekStr:====" + promptDataPeek.getSpeakText());
                     try {
-                        Thread.sleep(500L);
+                        Thread.sleep(100L);
                     } catch (InterruptedException e6) {
                         e6.printStackTrace();
                     }

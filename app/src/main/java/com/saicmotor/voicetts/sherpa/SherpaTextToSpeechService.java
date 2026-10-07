@@ -21,10 +21,10 @@ import java.util.List;
  * memes voix, que notre propre TtsService AIDL -- voir docs/TTS_ENGINE.md).
  *
  * Contrairement a SherpaTTS, pas de generateWithCallback() (incompatible
- * Java, voir SherpaVoiceEngine.synthesize()) : la synthese complete est
- * generee d'un coup puis renvoyee a SynthesisCallback en plusieurs morceaux
- * bornes par maxBufferSize -- pas de vrai flux, mais Piper/VITS n'est pas
- * autoregressif donc la latence ajoutee est negligeable.
+ * Java) : le texte est decoupe sur la ponctuation et synthetise segment par
+ * segment (SherpaVoiceEngine.streamSegments), chaque segment etant renvoye a
+ * SynthesisCallback en morceaux bornes par maxBufferSize des qu'il est pret,
+ * pendant que le suivant se calcule.
  */
 public class SherpaTextToSpeechService extends TextToSpeechService {
 
@@ -92,23 +92,24 @@ public class SherpaTextToSpeechService extends TextToSpeechService {
             return;
         }
 
-        SherpaVoiceEngine.SynthAudio audio;
+        // Streaming par segments : callback.start() des qu'on connait la frequence
+        // (sans synthetiser), puis chaque segment est envoye au fur et a mesure.
         try {
-            audio = engine.synthesize(code, text);
+            callback.start(engine.sampleRate(code), AudioFormat.ENCODING_PCM_16BIT, 1);
+            final int maxBuffer = callback.getMaxBufferSize();
+            engine.streamSegments(text, code, samples -> {
+                byte[] pcm16 = floatToPcm16(samples);
+                int offset = 0;
+                while (offset < pcm16.length) {
+                    int len = Math.min(maxBuffer, pcm16.length - offset);
+                    callback.audioAvailable(pcm16, offset, len);
+                    offset += len;
+                }
+            });
         } catch (Throwable t) {
             Log.e(TAG, "synthesize('" + code + "') failed", t);
             callback.error();
             return;
-        }
-
-        callback.start(audio.sampleRate, AudioFormat.ENCODING_PCM_16BIT, 1);
-        byte[] pcm16 = floatToPcm16(audio.samples);
-        int maxBuffer = callback.getMaxBufferSize();
-        int offset = 0;
-        while (offset < pcm16.length) {
-            int len = Math.min(maxBuffer, pcm16.length - offset);
-            callback.audioAvailable(pcm16, offset, len);
-            offset += len;
         }
         callback.done();
     }
