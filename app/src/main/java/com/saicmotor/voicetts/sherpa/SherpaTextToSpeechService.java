@@ -68,6 +68,9 @@ public class SherpaTextToSpeechService extends TextToSpeechService {
             return TextToSpeech.LANG_NOT_SUPPORTED;
         }
         lastLang = lang;
+        // Le client appelle setLanguage() avant speak() : on charge le modele
+        // tout de suite en tache de fond, la premiere phrase n'attend plus.
+        new Thread(() -> engine.preload(code), "tts-preload").start();
         return TextToSpeech.LANG_AVAILABLE;
     }
 

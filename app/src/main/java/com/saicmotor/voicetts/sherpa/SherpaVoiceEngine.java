@@ -52,6 +52,8 @@ public class SherpaVoiceEngine {
     private static final long CACHE_MAX_BYTES = 50L * 1024 * 1024;
     private final SynthCache cache;
     private final Map<String, OfflineTts> engines = new HashMap<>();
+    private final java.util.Set<String> warmedUp =
+            java.util.Collections.synchronizedSet(new java.util.HashSet<>());
     private volatile File dataDir;
     private volatile AudioTrack audioTrack;
     private volatile boolean cancelled;
@@ -197,7 +199,11 @@ public class SherpaVoiceEngine {
     public void preload(String lang) {
         try {
             OfflineTts tts = ensureEngine(lang);
-            warmUp(tts, lang);
+            // Plusieurs appelants (TtsService, SherpaTextToSpeechService) peuvent
+            // precharger la meme langue : un seul warm-up suffit.
+            if (warmedUp.add(lang)) {
+                warmUp(tts, lang);
+            }
         } catch (Throwable t) {
             Log.w(TAG, "preload('" + lang + "') failed, will retry lazily on first use", t);
         }
@@ -542,6 +548,7 @@ public class SherpaVoiceEngine {
                 tts.release();
             }
             engines.clear();
+            warmedUp.clear();
         }
     }
 }
