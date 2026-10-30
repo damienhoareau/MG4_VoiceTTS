@@ -43,8 +43,11 @@ openssl x509 -in platform.x509.pem -noout -fingerprint -sha256
 par exemple), donc pas besoin de root + remplacement de fichier :
 
 ```bash
-adb install -r app/build/outputs/apk/release/app-release.apk
+adb install -r -f app/build/outputs/apk/release/app-release.apk
 ```
+
+`-f` est nécessaire sur le calculateur EH32 : sans lui, l'installation échoue avec
+`Not allowed to install non-system apps on internal storage`.
 
 Si `adb install -r` échoue avec `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, c'est que la
 signature ne correspond pas — revérifier avec :

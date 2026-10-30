@@ -512,11 +512,31 @@ public class SherpaVoiceEngine {
      * Le premier son part apres le calcul du premier segment seulement.
      */
     public void speakAndWait(String text, String lang) {
+        speakAndWait(text, lang, null);
+    }
+
+    /**
+     * Comme {@link #speakAndWait(String, String)}, mais {@code beforeFirstSound}
+     * est appele une seule fois, juste avant le premier echantillon joue (donc
+     * apres le chargement du moteur et la synthese du premier segment). Sert a
+     * ne prendre le focus audio qu'au moment ou le son sort vraiment. S'il
+     * retourne false, rien n'est joue et la synthese est annulee.
+     */
+    public void speakAndWait(String text, String lang, java.util.function.BooleanSupplier beforeFirstSound) {
         try {
             final AudioTrack track = ensureAudioTrack(sampleRate(lang));
-            track.play();
-            streamSegments(text, lang, samples ->
-                    track.write(samples, 0, samples.length, AudioTrack.WRITE_BLOCKING));
+            final boolean[] started = {false};
+            streamSegments(text, lang, samples -> {
+                if (!started[0]) {
+                    started[0] = true;
+                    if (beforeFirstSound != null && !beforeFirstSound.getAsBoolean()) {
+                        stop();
+                        return;
+                    }
+                    track.play();
+                }
+                track.write(samples, 0, samples.length, AudioTrack.WRITE_BLOCKING);
+            });
         } catch (Throwable t) {
             Log.e(TAG, "speakAndWait('" + lang + "') failed", t);
         }

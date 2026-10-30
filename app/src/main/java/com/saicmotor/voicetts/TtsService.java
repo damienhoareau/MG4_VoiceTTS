@@ -24,6 +24,7 @@ import com.saicmotor.voicetts.log.Logger;
 import com.saicmotor.voicetts.sherpa.SherpaVoiceEngine;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.BooleanSupplier;
 
 /* JADX INFO: loaded from: classes3.dex */
 public class TtsService extends Service {
@@ -269,39 +270,8 @@ public class TtsService extends Service {
                 return;
             }
             this.isSpeaking = true;
-            if (promptData.isShouldAudioFocus() && !this.hasRequestAudioFocus) {
-                Log.d(this.TAG, "doSpeakInThread before, requestAudioFocusRequest");
-                if (!requestFocusSuccessFul(promptData.getSourceId())) {
-                    if (!this.promptQueue.isEmpty()) {
-                        this.promptQueue.clear();
-                    }
-                    this.isSpeaking = false;
-                    if (promptData.getiPromptCallBack() != null) {
-                        try {
-                            Log.v(this.TAG, "iPromptCallBack.onError()");
-                            promptData.getiPromptCallBack().onError();
-                            return;
-                        } catch (RemoteException e2) {
-                            e2.printStackTrace();
-                            return;
-                        }
-                    }
-                    return;
-                }
-                this.hasRequestAudioFocus = true;
-            }
             this.currentPromptData = promptData;
             Log.i(this.TAG, "content====" + promptData.getSpeakText());
-            this.isSpeaking = true;
-            Log.v(this.TAG, "start prompt...");
-            if (promptData.getiPromptCallBack() != null) {
-                try {
-                    Log.v(this.TAG, "iPromptCallBack.onSuccess()");
-                    promptData.getiPromptCallBack().onSuccess();
-                } catch (RemoteException e3) {
-                    e3.printStackTrace();
-                }
-            }
             if (isFromMap(promptData.getSourceId())) {
                 this.mCurLangForEngine = getCurLangForMap(promptData.getSourceId());
             } else {
@@ -309,8 +279,56 @@ public class TtsService extends Service {
             }
             LOG.i("mCurLangForEngine:" + this.mCurLangForEngine);
             this.ttsStatus = TTSStatus.Start_Prompt;
+            // Le focus n'est pris qu'au moment ou le premier son sort (apres le
+            // chargement du moteur et la synthese du 1er segment) : sinon la voiture
+            // route les touches de volume vers l'assistant alors qu'on est muet.
+            final boolean[] focusDenied = {false};
+            final boolean[] started = {false};
+            BooleanSupplier beforeFirstSound = () -> {
+                started[0] = true;
+                if (promptData.isShouldAudioFocus() && !this.hasRequestAudioFocus) {
+                    Log.d(this.TAG, "doSpeakInThread before first sound, requestAudioFocusRequest");
+                    if (!requestFocusSuccessFul(promptData.getSourceId())) {
+                        focusDenied[0] = true;
+                        return false;
+                    }
+                    this.hasRequestAudioFocus = true;
+                }
+                if (promptData.getiPromptCallBack() != null) {
+                    try {
+                        Log.v(this.TAG, "iPromptCallBack.onSuccess()");
+                        promptData.getiPromptCallBack().onSuccess();
+                    } catch (RemoteException e3) {
+                        e3.printStackTrace();
+                    }
+                }
+                return true;
+            };
             this.sherpaVoiceEngine.speakAndWait(
-                    promptData.getSpeakText(), SherpaVoiceEngine.langFor(this.mCurLangForEngine));
+                    promptData.getSpeakText(), SherpaVoiceEngine.langFor(this.mCurLangForEngine),
+                    beforeFirstSound);
+            if (!started[0]) {
+                // Rien n'a ete synthetise (texte vide, erreur moteur) : meme sequence
+                // focus/onSuccess qu'avant, pour que l'appelant ait sa reponse.
+                beforeFirstSound.getAsBoolean();
+            }
+            if (focusDenied[0]) {
+                this.ttsStatus = TTSStatus.None;
+                this.currentPromptData = null;
+                if (!this.promptQueue.isEmpty()) {
+                    this.promptQueue.clear();
+                }
+                this.isSpeaking = false;
+                if (promptData.getiPromptCallBack() != null) {
+                    try {
+                        Log.v(this.TAG, "iPromptCallBack.onError()");
+                        promptData.getiPromptCallBack().onError();
+                    } catch (RemoteException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+                return;
+            }
             this.ttsStatus = TTSStatus.None;
             Log.v(this.TAG, "end prompt...");
             if (promptData.getiPromptCallBack() != null) {
